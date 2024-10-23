@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: etcd
+  namespace: default
+spec:
+  destination:
+    namespace: etcd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    chart: etcd
+    targetRevision: 10.3.1
+    repoURL: https://charts.bitnami.com/bitnami
+    helm:
+      values: |
+        replicaCount: 0
+
+        pdb:
+          create: true
+
+        serviceAccount:
+          create: true
+
+        # initialClusterState: existing
+        # removeMemberOnContainerTermination: false
+        persistence:
+          enabled: true
+          size: 20Gi
+          storageClass: hyperdisk-balanced
+
+        metrics:
+          enabled: true
+          podMonitor:
+            enabled: true
+            additionalLabels:
+              release: prometheus-community
+            namespace: prometheus
+        auth:
+          rbac:
+            create: false
+            allowNoneAuthentication: true
+          token:
+            enabled: false
